@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Intelligence Report | Domain Analyzer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --primary-light: #e6f0ff;
+        --secondary: #3f37c9;
+        --accent: #4895ef;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --darker: #121416;
+        --success: #4cc9f0;
+        --warning: #f72585;
+        --gray: #adb5bd;
+        --border-radius: 12px;
+        --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f5f7ff;
+        color: var(--dark);
+        line-height: 1.6;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+      }
+
+      header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      header::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      }
+
+      header::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        left: -30px;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+      }
+
+      .search-container {
+        padding: 2rem;
+        background: white;
+      }
+
+      .search-box {
+        display: flex;
+        gap: 12px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      #urlInput {
+        flex: 1;
+        padding: 16px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+      }
+
+      #urlInput:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+
+      button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0 32px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+
+      button:hover {
+        background-color: var(--secondary);
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      #results {
+        padding: 0;
+        transition: all 0.4s ease;
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      #results.show {
+        opacity: 1;
+        height: auto;
+        padding: 0 2rem 2rem;
+      }
+
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .domain-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .favicon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: contain;
+        background: var(--light);
+        padding: 5px;
+      }
+
+      .domain-text {
+        line-height: 1.3;
+      }
+
+      .domain-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .domain-url {
+        color: var(--gray);
+        font-size: 0.9rem;
+      }
+
+      .cached {
+        background-color: var(--primary-light);
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .report-section {
+        margin-bottom: 2rem;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-light);
+      }
+
+      .section-header h2 {
+        font-size: 1.3rem;
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .section-header i {
+        color: var(--primary);
+        font-size: 1.2rem;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+      }
+
+      .info-card h3 {
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .info-card h3 i {
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      .info-item {
+        margin-bottom: 0.75rem;
+      }
+
+      .info-label {
+        font-weight: 500;
+        color: var(--gray);
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .info-value {
+        font-weight: 500;
+        color: var(--darker);
+        word-break: break-word;
+        line-height: 1.5;
+      }
+
+      .info-value a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: all 0.2s;
+      }
+
+      .info-value a:hover {
+        color: var(--secondary);
+        text-decoration: underline;
+      }
+
+      .verification-badge {
+        background: var(--primary-light);
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .verification-badge i {
+        font-size: 1.2rem;
+        color: var(--primary);
+      }
+
+      .verification-text {
+        flex: 1;
+      }
+
+      .verification-text strong {
+        font-weight: 600;
+      }
+
+      .data-source {
+        font-size: 0.75rem;
+        color: var(--gray);
+        margin-top: 3px;
+      }
+
+      .tech-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 1rem;
+      }
+
+      .tech-badge {
+        background: #e9ecef;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: var(--dark);
+      }
+
+      .social-links {
+        display: flex;
+        gap: 12px;
+        margin-top: 1rem;
+      }
+
+      .social-link {
+        color: var(--dark);
+        font-size: 1.4rem;
+        transition: all 0.2s;
+      }
+
+      .social-link:hover {
+        color: var(--primary);
+        transform: translateY(-2px);
+      }
+
+      .research-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 1.5rem;
+      }
+
+      .research-link {
+        background: var(--light);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        border: 1px solid #e9ecef;
+      }
+
+      .research-link:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.2);
+      }
+
+      .timestamp {
+        text-align: right;
+        color: var(--gray);
+        font-size: 0.8rem;
+        margin-top: 2rem;
+      }
+
+      .loading-container {
+        text-align: center;
+        padding: 3rem;
+        color: var(--gray);
+      }
+
+      .spinner {
+        border: 4px solid rgba(67, 97, 238, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary);
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1.5rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        font-size: 1.1rem;
+      }
+
+      .error-card {
+        background: #fff0f3;
+        color: var(--warning);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border-left: 4px solid var(--warning);
+      }
+
+      .error-card i {
+        font-size: 1.2rem;
+      }
+
+      .error-content {
+        flex: 1;
+      }
+
+      .error-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .tab-container {
+        margin-bottom: 2rem;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        font-weight: 500;
+        color: var(--gray);
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      @media (max-width: 768px) {
+        header {
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+        }
+
+        .search-box {
+          flex-direction: column;
+        }
+
+        button {
+          padding: 16px;
+          justify-content: center;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .domain-info {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+
+        .domain-name {
+          font-size: 1.3rem;
+        }
+
+        .result-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>
+          <i class="fas fa-search-location"></i> Website Intelligence Report
+        </h1>
+        <p class="subtitle">
+          Comprehensive domain analysis and ownership information
+        </p>
+      </header>
+
+      <div class="search-container">
+        <div class="search-box">
+          <input
+            type="url"
+            id="urlInput"
+            placeholder="Enter website URL (e.g., example.com)"
+            autocomplete="off"
+          />
+          <button onclick="analyzeURL()">
+            <i class="fas fa-search"></i> Analyze
+          </button>
+        </div>
+      </div>
+
+      <div id="results"></div>
+    </div>
+
+    <script>
+      // Current domain being analyzed
+      let currentDomain = "";
+
+      // Tab management
+      function setupTabs() {
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            // Remove active class from all tabs
+            tabs.forEach((t) => t.classList.remove("active"));
+            // Add active class to clicked tab
+            tab.classList.add("active");
+
+            // Hide all tab contents
+            document.querySelectorAll(".tab-content").forEach((content) => {
+              content.classList.remove("active");
+            });
+
+            // Show corresponding content
+            const tabId = tab.getAttribute("data-tab");
+            document.getElementById(tabId).classList.add("active");
+          });
+        });
+      }
+
+      // Format date
+      function formatDate(dateString) {
+        if (!dateString || dateString === "Unknown") return "Unknown";
+        const date = new Date(dateString);
+        return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+      }
+
+      // Display verification status
+      function displayVerification(company) {
+        if (
+          !company ||
+          !company.registrant ||
+          company.registrant.name.includes("Not available")
+        ) {
+          return `
+                    <div class="verification-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <div class="verification-text">
+                            <strong>Private Registration Detected</strong>
+                            <p>This domain appears to have private registration. For more accurate ownership details, try these research methods:</p>
+                        </div>
+                    </div>
+                `;
+        }
+        return `
+                <div class="verification-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="verification-text">
+                        <strong>Verified Registration Information</strong>
+                        <p>This domain's registration information is publicly available in WHOIS records.</p>
+                        <div class="data-source">Last updated: ${formatDate(
+                          company.dates?.updated
+                        )}</div>
+                    </div>
+                </div>
+            `;
+      }
+
+      // Display contact information
+      function displayContactInfo(contact) {
+        if (!contact)
+          return '<div class="info-value">No contact information found</div>';
+
+        let html = "";
+        if (contact.email) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">
+                            <a href="mailto:${contact.email}">${contact.email}</a>
+                        </div>
+                    </div>
+                `;
+        }
+        if (contact.phone) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">${contact.phone}</div>
+                    </div>
+                `;
+        }
+        return (
+          html || '<div class="info-value">No contact information found</div>'
+        );
+      }
+
+      // Display social media links
+      function displaySocialMedia(social) {
+        if (!social) return "";
+
+        let html =
+          '<div class="info-item"><div class="info-label">Social Media</div><div class="social-links">';
+
+        if (social.facebook) {
+          html += `<a href="${social.facebook}" class="social-link" target="_blank"><i class="fab fa-facebook"></i></a>`;
+        }
+        if (social.twitter) {
+          html += `<a href="${social.twitter}" class="social-link" target="_blank"><i class="fab fa-twitter"></i></a>`;
+        }
+        if (social.linkedin) {
+          html += `<a href="${social.linkedin}" class="social-link" target="_blank"><i class="fab fa-linkedin"></i></a>`;
+        }
+        if (social.instagram) {
+          html += `<a href="${social.instagram}" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>`;
+        }
+
+        html += "</div></div>";
+        return html.includes("fab") ? html : "";
+      }
+
+      // Display registrar information
+      function displayRegistrarInfo(registrar) {
+        if (!registrar)
+          return '<div class="info-value">No registrar information found</div>';
+
+        let html = "";
+        if (registrar.name) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Registrar Name</div>
+                        <div class="info-value">${registrar.name}</div>
+                    </div>
+                `;
+        }
+        if (registrar.ianaId) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">IANA ID</div>
+                        <div class="info-value">${registrar.ianaId}</div>
+                    </div>
+                `;
+        }
+        if (registrar.url) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Website</div>
+                        <div class="info-value">
+                            <a href="${registrar.url}" target="_blank">${registrar.url}</a>
+                        </div>
+                    </div>
+                `;
+        }
+        return (
+          html || '<div class="info-value">No registrar information found</div>'
+        );
+      }
+
+      // Display technical contact information
+      function displayTechnicalInfo(technical) {
+        if (!technical)
+          return '<div class="info-value">No technical contact found</div>';
+
+        let html = "";
+        if (technical.name) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Name</div>
+                        <div class="info-value">${technical.name}</div>
+                    </div>
+                `;
+        }
+        if (technical.email) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value">
+                            <a href="mailto:${technical.email}">${technical.email}</a>
+                        </div>
+                    </div>
+                `;
+        }
+        if (technical.phone) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Phone</div>
+                        <div class="info-value">${technical.phone}</div>
+                    </div>
+                `;
+        }
+        return (
+          html || '<div class="info-value">No technical contact found</div>'
+        );
+      }
+
+      // Display website technologies
+      function displayTechnologies(tech) {
+        if (!tech || tech.length === 0)
+          return '<div class="info-value">No technologies detected</div>';
+
+        let html = '<div class="tech-badges">';
+        tech.forEach((t) => {
+          html += `<span class="tech-badge">${t}</span>`;
+        });
+        html += "</div>";
+        return html;
+      }
+
+      // Display website metadata
+      function displayWebsiteMetadata(metadata) {
+        if (!metadata)
+          return '<div class="info-value">No metadata available</div>';
+
+        let html = "";
+        if (metadata.title) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Page Title</div>
+                        <div class="info-value">${metadata.title}</div>
+                    </div>
+                `;
+        }
+        if (metadata.description) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Meta Description</div>
+                        <div class="info-value">${metadata.description}</div>
+                    </div>
+                `;
+        }
+        if (metadata.keywords) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Meta Keywords</div>
+                        <div class="info-value">${metadata.keywords}</div>
+                    </div>
+                `;
+        }
+        if (metadata.language) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Language</div>
+                        <div class="info-value">${metadata.language}</div>
+                    </div>
+                `;
+        }
+        if (metadata.charset) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Charset</div>
+                        <div class="info-value">${metadata.charset}</div>
+                    </div>
+                `;
+        }
+        if (metadata.viewport) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Viewport</div>
+                        <div class="info-value">${metadata.viewport}</div>
+                    </div>
+                `;
+        }
+        if (metadata.canonical) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Canonical URL</div>
+                        <div class="info-value">
+                            <a href="${metadata.canonical}" target="_blank">${metadata.canonical}</a>
+                        </div>
+                    </div>
+                `;
+        }
+        return html || '<div class="info-value">No metadata available</div>';
+      }
+
+      // Display network information
+      function displayNetworkInfo(network) {
+        if (!network)
+          return '<div class="info-value">No network information available</div>';
+
+        let html = "";
+        if (network.ip) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">IP Address</div>
+                        <div class="info-value">${network.ip}</div>
+                    </div>
+                `;
+        }
+        if (network.asn) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">ASN</div>
+                        <div class="info-value">${network.asn}</div>
+                    </div>
+                `;
+        }
+        if (network.org) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Organization</div>
+                        <div class="info-value">${network.org}</div>
+                    </div>
+                `;
+        }
+        if (network.isp) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">ISP</div>
+                        <div class="info-value">${network.isp}</div>
+                    </div>
+                `;
+        }
+        if (network.connection) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Connection Type</div>
+                        <div class="info-value">${network.connection}</div>
+                    </div>
+                `;
+        }
+        return (
+          html ||
+          '<div class="info-value">No network information available</div>'
+        );
+      }
+
+      // Display location information
+      function displayLocationInfo(location) {
+        if (!location)
+          return '<div class="info-value">No location information available</div>';
+
+        let html = "";
+        if (location.city) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">City</div>
+                        <div class="info-value">${location.city}</div>
+                    </div>
+                `;
+        }
+        if (location.region) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Region</div>
+                        <div class="info-value">${location.region}</div>
+                    </div>
+                `;
+        }
+        if (location.country) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Country</div>
+                        <div class="info-value">${location.country}</div>
+                    </div>
+                `;
+        }
+        if (location.postal) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Postal Code</div>
+                        <div class="info-value">${location.postal}</div>
+                    </div>
+                `;
+        }
+        if (location.timezone) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Timezone</div>
+                        <div class="info-value">${location.timezone}</div>
+                    </div>
+                `;
+        }
+        return (
+          html ||
+          '<div class="info-value">No location information available</div>'
+        );
+      }
+
+      // Display SSL certificate information
+      function displaySSLInfo(ssl) {
+        if (!ssl)
+          return '<div class="info-value">No SSL information available</div>';
+
+        let html = "";
+        if (ssl.issuer) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Issuer</div>
+                        <div class="info-value">${ssl.issuer}</div>
+                    </div>
+                `;
+        }
+        if (ssl.validFrom) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Valid From</div>
+                        <div class="info-value">${ssl.validFrom}</div>
+                    </div>
+                `;
+        }
+        if (ssl.validTo) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Valid To</div>
+                        <div class="info-value">${ssl.validTo}</div>
+                    </div>
+                `;
+        }
+        if (ssl.keyAlg) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Key Algorithm</div>
+                        <div class="info-value">${ssl.keyAlg}</div>
+                    </div>
+                `;
+        }
+        if (ssl.keySize) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Key Size</div>
+                        <div class="info-value">${ssl.keySize} bits</div>
+                    </div>
+                `;
+        }
+        if (ssl.sigAlg) {
+          html += `
+                    <div class="info-item">
+                        <div class="info-label">Signature Algorithm</div>
+                        <div class="info-value">${ssl.sigAlg}</div>
+                    </div>
+                `;
+        }
+        return (
+          html || '<div class="info-value">No SSL information available</div>'
+        );
+      }
+
+      // Display research links
+      function displayResearchLinks(domain, companyName) {
+        const searchTerm = encodeURIComponent(companyName || domain);
+        return `
+                <div class="research-links">
+                    <a href="https://www.google.com/search?q=${searchTerm}+company" class="research-link" target="_blank">
+                        <i class="fab fa-google"></i> Google
+                    </a>
+                    <a href="https://www.linkedin.com/search/results/companies/?keywords=${searchTerm}" class="research-link" target="_blank">
+                        <i class="fab fa-linkedin"></i> LinkedIn
+                    </a>
+                    <a href="https://www.crunchbase.com/textsearch?q=${searchTerm}" class="research-link" target="_blank">
+                        <i class="fas fa-chart-line"></i> Crunchbase
+                    </a>
+                    <a href="https://www.whois.com/whois/${domain}" class="research-link" target="_blank">
+                        <i class="fas fa-database"></i> WHOIS
+                    </a>
+                    <a href="https://www.icann.org/whois" class="research-link" target="_blank">
+                        <i class="fas fa-globe"></i> ICANN
+                    </a>
+                </div>
+            `;
+      }
+
+      // Main analysis function
+      async function analyzeURL() {
+        const url = document.getElementById("urlInput").value.trim();
+        const resultsDiv = document.getElementById("results");
+
+        if (!url) {
+          resultsDiv.innerHTML = `
+                    <div class="error-card">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="error-content">
+                            <div class="error-title">Error</div>
+                            <p>Please enter a URL to analyze</p>
+                        </div>
+                    </div>
+                `;
+          resultsDiv.classList.add("show");
+          return;
+        }
+
+        // Extract domain
+        let domain;
+        try {
+          const parsedUrl = new URL(
+            url.startsWith("http") ? url : `https://${url}`
+          );
+          domain = parsedUrl.hostname.replace("www.", "");
+        } catch {
+          domain = url.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
+        }
+        currentDomain = domain;
+
+        // Show loading state
+        resultsDiv.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Gathering intelligence about <strong>${domain}</strong>...</div>
+                </div>
+            `;
+        resultsDiv.classList.add("show");
+
+        try {
+          const response = await fetch("/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            resultsDiv.innerHTML = `
+                        <div class="error-card">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div class="error-content">
+                                <div class="error-title">Error</div>
+                                <p>${data.error}</p>
+                                ${
+                                  data.details
+                                    ? `<p><small>${data.details}</small></p>`
+                                    : ""
+                                }
+                            </div>
+                        </div>
+                    `;
+            return;
+          }
+
+          // Get favicon URL
+          let faviconUrl = "";
+          if (data.website?.icon) {
+            faviconUrl = data.website.icon.startsWith("http")
+              ? data.website.icon
+              : `https://${domain}${data.website.icon}`;
+          }
+
+          // Build the complete results HTML
+          let html = `
+                    <div class="result-header">
+                        <div class="domain-info">
+                            ${
+                              faviconUrl
+                                ? `<img src="${faviconUrl}" class="favicon" onerror="this.style.display='none'">`
+                                : ""
+                            }
+                            <div class="domain-text">
+                                <div class="domain-name">
+                                    ${domain}
+                                    ${
+                                      data.website?.title
+                                        ? `<span style="color: var(--gray); font-weight: normal;">| ${data.website.title}</span>`
+                                        : ""
+                                    }
+                                </div>
+                                <div class="domain-url">https://${domain}</div>
+                            </div>
+                        </div>
+                        ${
+                          data.cached
+                            ? '<div class="cached"><i class="fas fa-bolt"></i> Cached results</div>'
+                            : ""
+                        }
+                    </div>
+                    
+                    ${displayVerification(data.whois)}
+                    
+                    <div class="tab-container">
+                        <div class="tabs">
+                            <div class="tab active" data-tab="overview">Overview</div>
+                            <div class="tab" data-tab="registration">Registration</div>
+                            <div class="tab" data-tab="website">Website</div>
+                            <div class="tab" data-tab="network">Network</div>
+                        </div>
+                        
+                        <div id="overview" class="tab-content active">
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <h3><i class="fas fa-user-tie"></i> Registrant</h3>
+                                    ${
+                                      data.whois?.registrant?.name
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Name</div>
+                                            <div class="info-value">${data.whois.registrant.name}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.country
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Country</div>
+                                            <div class="info-value">${data.whois.registrant.country}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${displayContactInfo(
+                                      data.whois?.registrant
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-calendar-alt"></i> Dates</h3>
+                                    ${
+                                      data.whois?.dates?.created
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Created</div>
+                                            <div class="info-value">${formatDate(
+                                              data.whois.dates.created
+                                            )}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.dates?.updated
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Last Updated</div>
+                                            <div class="info-value">${formatDate(
+                                              data.whois.dates.updated
+                                            )}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.dates?.expires
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Expires</div>
+                                            <div class="info-value">${formatDate(
+                                              data.whois.dates.expires
+                                            )}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-network-wired"></i> Network</h3>
+                                    ${
+                                      data.network?.ip
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">IP Address</div>
+                                            <div class="info-value">${data.network.ip}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.network?.network?.asn
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">ASN</div>
+                                            <div class="info-value">${data.network.network.asn}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.network?.network?.isp
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">ISP</div>
+                                            <div class="info-value">${data.network.network.isp}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-lock"></i> SSL Certificate</h3>
+                                    ${
+                                      data.ssl?.issuer
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Issuer</div>
+                                            <div class="info-value">${data.ssl.issuer}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.ssl?.validFrom
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Valid From</div>
+                                            <div class="info-value">${data.ssl.validFrom}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.ssl?.validTo
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Valid To</div>
+                                            <div class="info-value">${data.ssl.validTo}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="registration" class="tab-content">
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <h3><i class="fas fa-user-tie"></i> Registrant Details</h3>
+                                    ${
+                                      data.whois?.registrant?.name
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Name</div>
+                                            <div class="info-value">${data.whois.registrant.name}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.email
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Email</div>
+                                            <div class="info-value">
+                                                <a href="mailto:${data.whois.registrant.email}">${data.whois.registrant.email}</a>
+                                            </div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.phone
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Phone</div>
+                                            <div class="info-value">${data.whois.registrant.phone}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.address
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Address</div>
+                                            <div class="info-value">${data.whois.registrant.address}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.city
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">City</div>
+                                            <div class="info-value">${data.whois.registrant.city}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.state
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">State/Province</div>
+                                            <div class="info-value">${data.whois.registrant.state}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                    ${
+                                      data.whois?.registrant?.country
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-label">Country</div>
+                                            <div class="info-value">${data.whois.registrant.country}</div>
+                                        </div>
+                                    `
+                                        : ""
+                                    }
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-cogs"></i> Technical Contact</h3>
+                                    ${displayTechnicalInfo(
+                                      data.whois?.technical
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-store"></i> Registrar</h3>
+                                    ${displayRegistrarInfo(
+                                      data.whois?.registrar
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-server"></i> Nameservers</h3>
+                                    ${
+                                      Array.isArray(data.whois?.nameservers)
+                                        ? `
+                                        <div class="info-item">
+                                            <div class="info-value">
+                                                ${data.whois.nameservers
+                                                  .map(
+                                                    (ns) => `<div>${ns}</div>`
+                                                  )
+                                                  .join("")}
+                                            </div>
+                                        </div>
+                                    `
+                                        : `
+                                        <div class="info-value">${
+                                          data.whois?.nameservers ||
+                                          "Not available"
+                                        }</div>
+                                    `
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="website" class="tab-content">
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <h3><i class="fas fa-info-circle"></i> Metadata</h3>
+                                    ${displayWebsiteMetadata(data.website)}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-code"></i> Technologies</h3>
+                                    ${displayTechnologies(
+                                      data.website?.technologies
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-address-card"></i> Contact Info</h3>
+                                    ${displayContactInfo(data.website?.contact)}
+                                    ${displaySocialMedia(
+                                      data.website?.socialMedia
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-map-marker-alt"></i> Address</h3>
+                                    <div class="info-value">
+                                        ${data.website?.address || "Not found"}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="network" class="tab-content">
+                            <div class="info-grid">
+                                <div class="info-card">
+                                    <h3><i class="fas fa-network-wired"></i> Network Details</h3>
+                                    ${displayNetworkInfo(data.network?.network)}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-map-marked-alt"></i> Location</h3>
+                                    ${displayLocationInfo(
+                                      data.network?.location
+                                    )}
+                                </div>
+                                
+                                <div class="info-card">
+                                    <h3><i class="fas fa-lock"></i> SSL Certificate</h3>
+                                    ${displaySSLInfo(data.ssl)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section">
+                        <div class="section-header">
+                            <i class="fas fa-search-plus"></i>
+                            <h2>Further Research</h2>
+                        </div>
+                        ${displayResearchLinks(
+                          domain,
+                          data.whois?.registrant?.name
+                        )}
+                    </div>
+                    
+                    <div class="timestamp">
+                        <i class="far fa-clock"></i> Report generated: ${new Date(
+                          data.researchedAt
+                        ).toLocaleString()}
+                    </div>
+                `;
+
+          resultsDiv.innerHTML = html;
+          setupTabs();
+        } catch (e) {
+          resultsDiv.innerHTML = `
+                    <div class="error-card">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="error-content">
+                            <div class="error-title">Error</div>
+                            <p>${e.message}</p>
+                        </div>
+                    </div>
+                `;
+        }
+      }
+
+      // Allow searching by pressing Enter
+      document
+        .getElementById("urlInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            analyzeURL();
+          }
+        });
+    </script>
+  </body>
+</html>
