@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Website Company Finder</title>
+    <title>Domain Intelligence Pro | Website Ownership Finder</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <link
@@ -15,73 +15,308 @@
     <style>
       :root {
         --primary: #4361ee;
+        --primary-light: #e6f0ff;
+        --secondary: #3f37c9;
+        --accent: #4895ef;
         --light: #f8f9fa;
         --dark: #212529;
+        --darker: #121416;
+        --success: #4cc9f0;
+        --warning: #f72585;
         --gray: #adb5bd;
-        --error: #dc3545;
+        --border-radius: 12px;
+        --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
       }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
       body {
         font-family: "Poppins", sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
+        background-color: #f5f7ff;
+        color: var(--dark);
         line-height: 1.6;
+        padding: 20px;
       }
+
+      .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+      }
+
+      header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .search-container {
+        padding: 2rem;
+        background: white;
+        border-bottom: 1px solid #eee;
+      }
+
       .search-box {
         display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 12px;
+        max-width: 800px;
+        margin: 0 auto;
       }
+
       #urlInput {
         flex: 1;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
+        padding: 16px 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
       }
+
+      #urlInput:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      }
+
       button {
-        padding: 12px 20px;
-        background: var(--primary);
+        background-color: var(--primary);
         color: white;
         border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      #results {
-        margin-top: 20px;
-        border: 1px solid #eee;
+        padding: 0 32px;
         border-radius: 8px;
-        padding: 20px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
       }
-      .result-item {
-        margin-bottom: 15px;
+
+      button:hover {
+        background-color: var(--secondary);
+        transform: translateY(-2px);
       }
-      .result-label {
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      #results {
+        padding: 0;
+        transition: all 0.4s ease;
+        opacity: 0;
+        height: 0;
+        overflow: hidden;
+      }
+
+      #results.show {
+        opacity: 1;
+        height: auto;
+        padding: 0 2rem 2rem;
+      }
+
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .domain-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .favicon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: contain;
+        background: var(--light);
+        padding: 5px;
+      }
+
+      .domain-text {
+        line-height: 1.3;
+      }
+
+      .domain-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .domain-url {
+        color: var(--gray);
+        font-size: 0.9rem;
+      }
+
+      .cached {
+        background-color: var(--primary-light);
+        color: var(--primary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .info-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+      }
+
+      .info-card h3 {
+        color: var(--secondary);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .info-item {
+        margin-bottom: 0.75rem;
+      }
+
+      .info-label {
         font-weight: 500;
         color: var(--gray);
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
       }
-      .result-value {
-        margin-top: 5px;
+
+      .info-value {
+        font-weight: 500;
+        color: var(--darker);
+        word-break: break-word;
+        line-height: 1.5;
       }
-      .error {
-        color: var(--error);
-        padding: 10px;
-        background: #fee;
-        border-radius: 4px;
+
+      .info-value a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: all 0.2s;
       }
-      .loading {
+
+      .info-value a:hover {
+        color: var(--secondary);
+        text-decoration: underline;
+      }
+
+      .verification-badge {
+        background: var(--primary-light);
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .verification-badge i {
+        font-size: 1.2rem;
+        color: var(--primary);
+      }
+
+      .verification-text {
+        flex: 1;
+      }
+
+      .verification-text strong {
+        font-weight: 600;
+      }
+
+      .research-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 1.5rem;
+      }
+
+      .research-link {
+        background: var(--light);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        border: 1px solid #e9ecef;
+      }
+
+      .research-link:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.2);
+      }
+
+      .timestamp {
+        text-align: right;
+        color: var(--gray);
+        font-size: 0.8rem;
+        margin-top: 2rem;
+      }
+
+      .loading-container {
         text-align: center;
-        padding: 20px;
+        padding: 3rem;
+        color: var(--gray);
       }
+
       .spinner {
-        border: 3px solid rgba(0, 0, 0, 0.1);
+        border: 4px solid rgba(67, 97, 238, 0.1);
         border-radius: 50%;
-        border-top: 3px solid var(--primary);
-        width: 20px;
-        height: 20px;
+        border-top: 4px solid var(--primary);
+        width: 40px;
+        height: 40px;
         animation: spin 1s linear infinite;
-        margin: 0 auto 10px;
+        margin: 0 auto 1.5rem;
       }
+
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -90,22 +325,91 @@
           transform: rotate(360deg);
         }
       }
+
+      .error-card {
+        background: #fff0f3;
+        color: var(--warning);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        border-left: 4px solid var(--warning);
+      }
+
+      .error-card i {
+        font-size: 1.2rem;
+      }
+
+      .error-content {
+        flex: 1;
+      }
+
+      .error-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          margin: 20px auto;
+        }
+
+        header {
+          padding: 1.5rem;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+        }
+
+        .search-box {
+          flex-direction: column;
+        }
+
+        button {
+          padding: 16px;
+          justify-content: center;
+        }
+
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .domain-info {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>Website Company Finder</h1>
-    <div class="search-box">
-      <input
-        type="url"
-        id="urlInput"
-        placeholder="Enter website URL (e.g., google.com)"
-      />
-      <button onclick="analyzeURL()">
-        <i class="fas fa-search"></i> Analyze
-      </button>
-    </div>
+    <div class="container">
+      <header>
+        <h1><i class="fas fa-search-location"></i> Domain Intelligence Pro</h1>
+        <p class="subtitle">
+          Comprehensive website ownership and domain information
+        </p>
+      </header>
 
-    <div id="results"></div>
+      <div class="search-container">
+        <div class="search-box">
+          <input
+            type="url"
+            id="urlInput"
+            placeholder="Enter website URL (e.g., example.com)"
+            autocomplete="off"
+          />
+          <button onclick="analyzeURL()">
+            <i class="fas fa-search"></i> Analyze Domain
+          </button>
+        </div>
+      </div>
+
+      <div id="results"></div>
+    </div>
 
     <script>
       async function analyzeURL() {
@@ -113,16 +417,39 @@
         const resultsDiv = document.getElementById("results");
 
         if (!url) {
-          resultsDiv.innerHTML = '<div class="error">Please enter a URL</div>';
+          resultsDiv.innerHTML = `
+                    <div class="error-card">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="error-content">
+                            <div class="error-title">Error</div>
+                            <p>Please enter a valid website URL to analyze</p>
+                        </div>
+                    </div>
+                `;
+          resultsDiv.classList.add("show");
           return;
         }
 
+        // Extract domain
+        let domain;
+        try {
+          const parsedUrl = new URL(
+            url.startsWith("http") ? url : `https://${url}`
+          );
+          domain = parsedUrl.hostname.replace("www.", "");
+        } catch {
+          domain = url.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
+        }
+
+        // Show loading state
         resultsDiv.innerHTML = `
-                <div class="loading">
+                <div class="loading-container">
                     <div class="spinner"></div>
-                    <p>Analyzing ${url}...</p>
+                    <div class="loading-text">Analyzing <strong>${domain}</strong>...</div>
+                    <p>Gathering domain registration, hosting, and ownership details</p>
                 </div>
             `;
+        resultsDiv.classList.add("show");
 
         try {
           const response = await fetch("/analyze", {
@@ -134,11 +461,16 @@
             body: JSON.stringify({ url }),
           });
 
-          // Check for JSON response
+          // First check if response is JSON
           const contentType = response.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
             const text = await response.text();
-            throw new Error(`Server returned: ${text.substring(0, 100)}...`);
+            throw new Error(
+              `Server returned unexpected response: ${text.substring(
+                0,
+                100
+              )}...`
+            );
           }
 
           const data = await response.json();
@@ -149,53 +481,187 @@
             );
           }
 
-          // Display results
+          // Get favicon URL
+          let faviconUrl = "";
+          if (data.website?.icon) {
+            faviconUrl = data.website.icon.startsWith("http")
+              ? data.website.icon
+              : `https://${domain}${data.website.icon}`;
+          }
+
+          // Build the complete results HTML
           let html = `
-                    <h2>Results for ${data.domain}</h2>
-                    <div class="result-item">
-                        <div class="result-label">Website Title</div>
-                        <div class="result-value">${
-                          data.website?.title || "Not available"
-                        }</div>
+                    <div class="result-header">
+                        <div class="domain-info">
+                            ${
+                              faviconUrl
+                                ? `<img src="${faviconUrl}" class="favicon" onerror="this.style.display='none'">`
+                                : ""
+                            }
+                            <div class="domain-text">
+                                <div class="domain-name">
+                                    ${domain}
+                                    ${
+                                      data.website?.title
+                                        ? `<span style="color: var(--gray); font-weight: normal;">| ${data.website.title}</span>`
+                                        : ""
+                                    }
+                                </div>
+                                <div class="domain-url">https://${domain}</div>
+                            </div>
+                        </div>
+                        ${
+                          data.cached
+                            ? '<div class="cached"><i class="fas fa-bolt"></i> Cached results</div>'
+                            : ""
+                        }
                     </div>
-                    <div class="result-item">
-                        <div class="result-label">Registrant</div>
-                        <div class="result-value">${
-                          data.whois?.registrant?.name || "Not available"
-                        }</div>
+                    
+                    <div class="verification-badge">
+                        <i class="fas fa-${
+                          data.whois?.registrant?.name
+                            ? "check-circle"
+                            : "shield-alt"
+                        }"></i>
+                        <div class="verification-text">
+                            <strong>${
+                              data.whois?.registrant?.name
+                                ? "Verified Registration"
+                                : "Private Registration Detected"
+                            }</strong>
+                            <p>${
+                              data.whois?.registrant?.name
+                                ? "This domain registration information is publicly available"
+                                : "For more accurate ownership details, try additional research methods"
+                            }</p>
+                        </div>
                     </div>
-                    <div class="result-item">
-                        <div class="result-label">Country</div>
-                        <div class="result-value">${
-                          data.whois?.registrant?.country || "Not available"
-                        }</div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3><i class="fas fa-user-tie"></i> Registrant</h3>
+                            <div class="info-item">
+                                <div class="info-label">Name</div>
+                                <div class="info-value">${
+                                  data.whois?.registrant?.name ||
+                                  "Not available"
+                                }</div>
+                            </div>
+                            ${
+                              data.whois?.registrant?.country
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Country</div>
+                                <div class="info-value">${data.whois.registrant.country}</div>
+                            </div>`
+                                : ""
+                            }
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3><i class="fas fa-calendar-alt"></i> Registration</h3>
+                            ${
+                              data.whois?.dates?.created
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Created</div>
+                                <div class="info-value">${new Date(
+                                  data.whois.dates.created
+                                ).toLocaleDateString()}</div>
+                            </div>`
+                                : ""
+                            }
+                            ${
+                              data.whois?.dates?.expires
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Expires</div>
+                                <div class="info-value">${new Date(
+                                  data.whois.dates.expires
+                                ).toLocaleDateString()}</div>
+                            </div>`
+                                : ""
+                            }
+                            ${
+                              data.whois?.registrar
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Registrar</div>
+                                <div class="info-value">${data.whois.registrar}</div>
+                            </div>`
+                                : ""
+                            }
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3><i class="fas fa-globe"></i> Website</h3>
+                            ${
+                              data.website?.title
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Title</div>
+                                <div class="info-value">${data.website.title}</div>
+                            </div>`
+                                : ""
+                            }
+                            ${
+                              data.website?.description
+                                ? `
+                            <div class="info-item">
+                                <div class="info-label">Description</div>
+                                <div class="info-value">${data.website.description}</div>
+                            </div>`
+                                : ""
+                            }
+                        </div>
                     </div>
-                    <div class="result-item">
-                        <div class="result-label">Registered Since</div>
-                        <div class="result-value">${
-                          data.whois?.dates?.created || "Not available"
-                        }</div>
+                    
+                    <div class="info-card">
+                        <h3><i class="fas fa-search-plus"></i> Continue Research</h3>
+                        <div class="research-links">
+                            <a href="https://www.google.com/search?q=${encodeURIComponent(
+                              data.whois?.registrant?.name || domain
+                            )}+company" class="research-link" target="_blank">
+                                <i class="fab fa-google"></i> Google
+                            </a>
+                            <a href="https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(
+                              data.whois?.registrant?.name || domain
+                            )}" class="research-link" target="_blank">
+                                <i class="fab fa-linkedin"></i> LinkedIn
+                            </a>
+                            <a href="https://www.whois.com/whois/${domain}" class="research-link" target="_blank">
+                                <i class="fas fa-database"></i> WHOIS
+                            </a>
+                            <a href="https://www.icann.org/whois" class="research-link" target="_blank">
+                                <i class="fas fa-globe"></i> ICANN
+                            </a>
+                        </div>
                     </div>
-                    ${
-                      data.cached
-                        ? "<p><em>Note: Showing cached results</em></p>"
-                        : ""
-                    }
+                    
+                    <div class="timestamp">
+                        <i class="far fa-clock"></i> Report generated: ${new Date(
+                          data.timestamp
+                        ).toLocaleString()}
+                    </div>
                 `;
 
           resultsDiv.innerHTML = html;
         } catch (e) {
           resultsDiv.innerHTML = `
-                    <div class="error">
-                        <i class="fas fa-exclamation-circle"></i> 
-                        ${e.message}
+                    <div class="error-card">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="error-content">
+                            <div class="error-title">Analysis Failed</div>
+                            <p>${e.message}</p>
+                            <p><small>Try again or check the URL format (e.g., example.com)</small></p>
+                        </div>
                     </div>
                 `;
           console.error("Error:", e);
         }
       }
 
-      // Allow Enter key to trigger search
+      // Allow searching by pressing Enter
       document
         .getElementById("urlInput")
         .addEventListener("keypress", function (e) {
