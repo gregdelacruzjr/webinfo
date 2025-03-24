@@ -1,682 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Domain Intelligence Pro | Website Analysis Tool</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <!-- [Keep all your existing head content] -->
     <style>
-      :root {
-        --primary: #4361ee;
-        --primary-light: #e6f0ff;
-        --secondary: #3f37c9;
-        --accent: #4895ef;
-        --light: #f8f9fa;
-        --dark: #212529;
-        --darker: #121416;
-        --success: #4cc9f0;
-        --warning: #f72585;
-        --gray: #adb5bd;
-        --border-radius: 12px;
-        --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-      }
+      /* [Keep all your existing styles] */
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Poppins", sans-serif;
-        background-color: #f5f7ff;
-        color: var(--dark);
-        line-height: 1.6;
-        padding: 20px;
-      }
-
-      .container {
-        max-width: 1000px;
-        margin: 40px auto;
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--box-shadow);
-        overflow: hidden;
-      }
-
-      header {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        padding: 2.5rem;
-        text-align: center;
-      }
-
-      h1 {
-        font-size: 2.2rem;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-      }
-
-      .subtitle {
-        font-size: 1.1rem;
-        opacity: 0.9;
-      }
-
-      .search-container {
-        padding: 2rem;
-        background: white;
-        border-bottom: 1px solid #eee;
-      }
-
-      .search-box {
-        display: flex;
-        gap: 12px;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      #urlInput {
-        flex: 1;
-        padding: 16px 20px;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        font-family: inherit;
-      }
-
-      #urlInput:focus {
-        border-color: var(--accent);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-      }
-
-      button {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-        padding: 0 32px;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: inherit;
-      }
-
-      button:hover {
-        background-color: var(--secondary);
-        transform: translateY(-2px);
-      }
-
-      button:active {
-        transform: translateY(0);
-      }
-
-      #results {
-        padding: 0;
-        transition: all 0.4s ease;
-        opacity: 0;
-        height: 0;
-        overflow: hidden;
-      }
-
-      #results.show {
-        opacity: 1;
-        height: auto;
-        padding: 0 2rem 2rem;
-      }
-
-      .result-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding: 1.5rem 0;
-        border-bottom: 1px solid #eee;
-      }
-
-      .domain-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-      }
-
-      .favicon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        object-fit: contain;
-        background: var(--light);
-        padding: 5px;
-      }
-
-      .domain-text {
-        line-height: 1.3;
-      }
-
-      .domain-name {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--dark);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .domain-url {
-        color: var(--gray);
-        font-size: 0.9rem;
-      }
-
-      .cached {
-        background-color: var(--primary-light);
-        color: var(--primary);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .info-card {
-        background: white;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #eee;
-      }
-
-      .info-card h3 {
-        color: var(--secondary);
-        margin-bottom: 1rem;
-        font-size: 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .info-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-      }
-
-      .info-item {
-        margin-bottom: 0.75rem;
-      }
-
-      .info-label {
-        font-weight: 500;
-        color: var(--gray);
-        font-size: 0.85rem;
-        margin-bottom: 0.2rem;
-      }
-
-      .info-value {
-        font-weight: 500;
-        color: var(--darker);
-        word-break: break-word;
-        line-height: 1.5;
-      }
-
-      .info-value a {
-        color: var(--primary);
-        text-decoration: none;
-        transition: all 0.2s;
-      }
-
-      .info-value a:hover {
-        color: var(--secondary);
-        text-decoration: underline;
-      }
-
-      .verification-badge {
-        background: var(--primary-light);
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1.5rem 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .verification-badge i {
-        font-size: 1.2rem;
-        color: var(--primary);
-      }
-
-      .verification-text {
-        flex: 1;
-      }
-
-      .verification-text strong {
-        font-weight: 600;
-      }
-
-      .research-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 1.5rem;
-      }
-
-      .research-link {
-        background: var(--light);
-        color: var(--primary);
-        padding: 8px 16px;
-        border-radius: 20px;
-        text-decoration: none;
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s ease;
-        border: 1px solid #e9ecef;
-      }
-
-      .research-link:hover {
-        background: var(--primary);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 3px 10px rgba(67, 97, 238, 0.2);
-      }
-
-      .timestamp {
-        text-align: right;
-        color: var(--gray);
-        font-size: 0.8rem;
-        margin-top: 2rem;
-      }
-
-      .loading-container {
-        text-align: center;
-        padding: 3rem;
-        color: var(--gray);
-      }
-
-      .spinner {
-        border: 4px solid rgba(67, 97, 238, 0.1);
-        border-radius: 50%;
-        border-top: 4px solid var(--primary);
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 1.5rem;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .error-card {
-        background: #fff0f3;
-        color: var(--warning);
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        border-left: 4px solid var(--warning);
-      }
-
-      .error-card i {
-        font-size: 1.2rem;
-      }
-
-      .error-content {
-        flex: 1;
-      }
-
-      .error-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-
-      @media (max-width: 768px) {
-        .container {
-          margin: 20px auto;
-        }
-
-        header {
-          padding: 1.5rem;
-        }
-
-        h1 {
-          font-size: 1.8rem;
-        }
-
-        .search-box {
-          flex-direction: column;
-        }
-
-        button {
-          padding: 16px;
-          justify-content: center;
-        }
-
-        .info-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .domain-info {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 8px;
-        }
+      /* Add this new style */
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <header>
-        <h1><i class="fas fa-search-location"></i> Domain Intelligence Pro</h1>
-        <p class="subtitle">
-          Comprehensive website ownership and domain information
-        </p>
-      </header>
+      <!-- [Keep your existing header and search box] -->
 
-      <div class="search-container">
-        <div class="search-box">
-          <input
-            type="url"
-            id="urlInput"
-            placeholder="Enter website URL (e.g., example.com)"
-            autocomplete="off"
-          />
-          <button id="analyzeButton">
-            <i class="fas fa-search"></i> Analyze Domain
-          </button>
+      <div id="results">
+        <!-- We'll populate this dynamically -->
+      </div>
+
+      <!-- Add this hidden error template -->
+      <div id="errorTemplate" class="hidden">
+        <div class="error-card">
+          <i class="fas fa-exclamation-circle"></i>
+          <div class="error-content">
+            <div class="error-title">Error</div>
+            <p class="error-message"></p>
+            <p>
+              <small
+                >Try again or check the URL format (e.g., example.com)</small
+              >
+            </p>
+          </div>
         </div>
       </div>
 
-      <div id="results"></div>
+      <!-- Add this hidden loading template -->
+      <div id="loadingTemplate" class="hidden">
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <div class="loading-text">Analyzing website...</div>
+        </div>
+      </div>
     </div>
 
     <script>
-      // DOM Elements
-      const urlInput = document.getElementById("urlInput");
-      const analyzeButton = document.getElementById("analyzeButton");
-      const resultsDiv = document.getElementById("results");
+      document.addEventListener("DOMContentLoaded", () => {
+        const urlInput = document.getElementById("urlInput");
+        const analyzeButton = document.getElementById("analyzeButton");
+        const resultsDiv = document.getElementById("results");
+        const errorTemplate = document.getElementById("errorTemplate");
+        const loadingTemplate = document.getElementById("loadingTemplate");
 
-      // Event Listeners
-      analyzeButton.addEventListener("click", analyzeURL);
-      urlInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") analyzeURL();
+        // Main analysis function
+        const analyzeURL = async () => {
+          const url = urlInput.value.trim();
+
+          // Clear previous results
+          resultsDiv.innerHTML = "";
+          resultsDiv.classList.remove("show");
+
+          // Validate input
+          if (!url) {
+            showError("Please enter a website URL");
+            return;
+          }
+
+          // Show loading state
+          showLoading();
+
+          try {
+            const response = await fetch("/api/analyze", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({ url }),
+            });
+
+            // Handle HTTP errors
+            if (!response.ok) {
+              const errorData = await parseResponse(response);
+              throw new Error(
+                errorData?.message || `Server returned ${response.status}`
+              );
+            }
+
+            const data = await parseResponse(response);
+
+            // Handle API errors
+            if (data?.error) {
+              throw new Error(data.message || data.error);
+            }
+
+            // Show successful results
+            displayResults(data);
+          } catch (error) {
+            showError(getSafeErrorMessage(error));
+            console.error("Analysis error:", error);
+          }
+        };
+
+        // Helper to safely parse JSON responses
+        const parseResponse = async (response) => {
+          try {
+            return await response.json();
+          } catch {
+            return { error: "Invalid server response" };
+          }
+        };
+
+        // Safe error message extraction
+        const getSafeErrorMessage = (error) => {
+          if (typeof error === "string") return error;
+          if (error?.message) return error.message;
+          if (error?.toString) return error.toString();
+          return "An unknown error occurred";
+        };
+
+        // Display loading state
+        const showLoading = () => {
+          resultsDiv.innerHTML = loadingTemplate.innerHTML;
+          resultsDiv.classList.add("show");
+        };
+
+        // Display error state
+        const showError = (message) => {
+          const clone = errorTemplate.cloneNode(true);
+          clone.classList.remove("hidden");
+          clone.querySelector(".error-message").textContent =
+            getSafeErrorMessage(message);
+          resultsDiv.innerHTML = "";
+          resultsDiv.appendChild(clone);
+          resultsDiv.classList.add("show");
+        };
+
+        // Display successful results
+        const displayResults = (data) => {
+          // [Keep your existing displayResults implementation]
+          // ... but make sure to escape all dynamic content
+        };
+
+        // Event listeners
+        analyzeButton.addEventListener("click", analyzeURL);
+        urlInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") analyzeURL();
+        });
       });
-
-      // Main Analysis Function
-      async function analyzeURL() {
-        const url = urlInput.value.trim();
-
-        if (!url) {
-          showError("Please enter a website URL");
-          return;
-        }
-
-        showLoading();
-
-        try {
-          const response = await fetch("/api/analyze", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({ url }),
-          });
-
-          // Handle HTTP errors
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-              errorData.message ||
-                errorData.error ||
-                `Server returned ${response.status}`
-            );
-          }
-
-          const data = await response.json();
-
-          // Handle API-level errors
-          if (!data.success) {
-            throw new Error(data.message || data.error || "Analysis failed");
-          }
-
-          displayResults(data);
-        } catch (error) {
-          showError(getErrorMessage(error));
-          console.error("Analysis Error:", error);
-        }
-      }
-
-      // Display Results
-      function displayResults(data) {
-        const domain = data.domain;
-        const faviconUrl = data.website?.icon
-          ? data.website.icon.startsWith("http")
-            ? data.website.icon
-            : `https://${domain}${data.website.icon}`
-          : null;
-
-        let html = `
-                <div class="result-header">
-                    <div class="domain-info">
-                        ${
-                          faviconUrl
-                            ? `<img src="${faviconUrl}" class="favicon" onerror="this.style.display='none'">`
-                            : ""
-                        }
-                        <div class="domain-text">
-                            <div class="domain-name">
-                                ${domain}
-                                ${
-                                  data.website?.title
-                                    ? `<span style="color: var(--gray); font-weight: normal;">| ${data.website.title}</span>`
-                                    : ""
-                                }
-                            </div>
-                            <div class="domain-url">https://${domain}</div>
-                        </div>
-                    </div>
-                    ${
-                      data.cached
-                        ? '<div class="cached"><i class="fas fa-bolt"></i> Cached results</div>'
-                        : ""
-                    }
-                </div>
-                
-                <div class="verification-badge">
-                    <i class="fas fa-${
-                      data.whois?.registrant?.name
-                        ? "check-circle"
-                        : "shield-alt"
-                    }"></i>
-                    <div class="verification-text">
-                        <strong>${
-                          data.whois?.registrant?.name
-                            ? "Verified Registration"
-                            : "Private Registration Detected"
-                        }</strong>
-                        <p>${
-                          data.whois?.registrant?.name
-                            ? "This domain registration information is publicly available"
-                            : "For more accurate ownership details, try additional research methods"
-                        }</p>
-                    </div>
-                </div>
-                
-                <div class="info-grid">
-                    <div class="info-card">
-                        <h3><i class="fas fa-user-tie"></i> Registrant</h3>
-                        <div class="info-item">
-                            <div class="info-label">Name</div>
-                            <div class="info-value">${
-                              data.whois?.registrant?.name || "Not available"
-                            }</div>
-                        </div>
-                        ${
-                          data.whois?.registrant?.country
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Country</div>
-                            <div class="info-value">${data.whois.registrant.country}</div>
-                        </div>`
-                            : ""
-                        }
-                    </div>
-                    
-                    <div class="info-card">
-                        <h3><i class="fas fa-calendar-alt"></i> Registration</h3>
-                        ${
-                          data.whois?.dates?.created
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Created</div>
-                            <div class="info-value">${new Date(
-                              data.whois.dates.created
-                            ).toLocaleDateString()}</div>
-                        </div>`
-                            : ""
-                        }
-                        ${
-                          data.whois?.dates?.expires
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Expires</div>
-                            <div class="info-value">${new Date(
-                              data.whois.dates.expires
-                            ).toLocaleDateString()}</div>
-                        </div>`
-                            : ""
-                        }
-                        ${
-                          data.whois?.registrar
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Registrar</div>
-                            <div class="info-value">${data.whois.registrar}</div>
-                        </div>`
-                            : ""
-                        }
-                    </div>
-                    
-                    <div class="info-card">
-                        <h3><i class="fas fa-globe"></i> Website</h3>
-                        ${
-                          data.website?.title
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Title</div>
-                            <div class="info-value">${data.website.title}</div>
-                        </div>`
-                            : ""
-                        }
-                        ${
-                          data.website?.description
-                            ? `
-                        <div class="info-item">
-                            <div class="info-label">Description</div>
-                            <div class="info-value">${data.website.description}</div>
-                        </div>`
-                            : ""
-                        }
-                    </div>
-                </div>
-                
-                <div class="info-card">
-                    <h3><i class="fas fa-search-plus"></i> Continue Research</h3>
-                    <div class="research-links">
-                        <a href="https://www.google.com/search?q=${encodeURIComponent(
-                          data.whois?.registrant?.name || domain
-                        )}+company" class="research-link" target="_blank">
-                            <i class="fab fa-google"></i> Google
-                        </a>
-                        <a href="https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(
-                          data.whois?.registrant?.name || domain
-                        )}" class="research-link" target="_blank">
-                            <i class="fab fa-linkedin"></i> LinkedIn
-                        </a>
-                        <a href="https://www.whois.com/whois/${domain}" class="research-link" target="_blank">
-                            <i class="fas fa-database"></i> WHOIS
-                        </a>
-                        <a href="https://www.icann.org/whois" class="research-link" target="_blank">
-                            <i class="fas fa-globe"></i> ICANN
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="timestamp">
-                    <i class="far fa-clock"></i> Report generated: ${new Date(
-                      data.timestamp
-                    ).toLocaleString()}
-                </div>
-            `;
-
-        resultsDiv.innerHTML = html;
-        resultsDiv.classList.add("show");
-      }
-
-      // Error Handling
-      function showError(message) {
-        resultsDiv.innerHTML = `
-                <div class="error-card">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <div class="error-content">
-                        <div class="error-title">Error</div>
-                        <p>${escapeHtml(message)}</p>
-                        <p><small>Try again or check the URL format (e.g., example.com)</small></p>
-                    </div>
-                </div>
-            `;
-        resultsDiv.classList.add("show");
-      }
-
-      function getErrorMessage(error) {
-        if (error instanceof Error) return error.message;
-        if (typeof error === "string") return error;
-        if (error?.message) return error.message;
-        return "An unknown error occurred";
-      }
-
-      // Loading State
-      function showLoading() {
-        resultsDiv.innerHTML = `
-                <div class="loading-container">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Analyzing website...</div>
-                </div>
-            `;
-        resultsDiv.classList.add("show");
-      }
-
-      // XSS Protection
-      function escapeHtml(unsafe) {
-        return unsafe
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
     </script>
   </body>
 </html>
