@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Domain Intelligence Pro | Website Ownership Finder</title>
+    <title>Domain Intelligence Pro | Website Analysis Tool</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
@@ -402,7 +402,7 @@
             placeholder="Enter website URL (e.g., example.com)"
             autocomplete="off"
           />
-          <button onclick="analyzeURL()">
+          <button id="analyzeButton">
             <i class="fas fa-search"></i> Analyze Domain
           </button>
         </div>
@@ -412,47 +412,30 @@
     </div>
 
     <script>
+      // DOM Elements
+      const urlInput = document.getElementById("urlInput");
+      const analyzeButton = document.getElementById("analyzeButton");
+      const resultsDiv = document.getElementById("results");
+
+      // Event Listeners
+      analyzeButton.addEventListener("click", analyzeURL);
+      urlInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") analyzeURL();
+      });
+
+      // Main Analysis Function
       async function analyzeURL() {
-        const url = document.getElementById("urlInput").value.trim();
-        const resultsDiv = document.getElementById("results");
+        const url = urlInput.value.trim();
 
         if (!url) {
-          resultsDiv.innerHTML = `
-                    <div class="error-card">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <div class="error-content">
-                            <div class="error-title">Error</div>
-                            <p>Please enter a valid website URL to analyze</p>
-                        </div>
-                    </div>
-                `;
-          resultsDiv.classList.add("show");
+          showError("Please enter a website URL");
           return;
         }
 
-        // Extract domain
-        let domain;
-        try {
-          const parsedUrl = new URL(
-            url.startsWith("http") ? url : `https://${url}`
-          );
-          domain = parsedUrl.hostname.replace("www.", "");
-        } catch {
-          domain = url.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
-        }
-
-        // Show loading state
-        resultsDiv.innerHTML = `
-                <div class="loading-container">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Analyzing <strong>${domain}</strong>...</div>
-                    <p>Gathering domain registration, hosting, and ownership details</p>
-                </div>
-            `;
-        resultsDiv.classList.add("show");
+        showLoading();
 
         try {
-          const response = await fetch("api/analyze", {
+          const response = await fetch("/api/analyze", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -461,214 +444,239 @@
             body: JSON.stringify({ url }),
           });
 
-          // First check if response is JSON
-          const contentType = response.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) {
-            const text = await response.text();
+          // Handle HTTP errors
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(
-              `Server returned unexpected response: ${text.substring(
-                0,
-                100
-              )}...`
+              errorData.message ||
+                errorData.error ||
+                `Server returned ${response.status}`
             );
           }
 
           const data = await response.json();
 
-          if (data.error) {
-            throw new Error(
-              data.error + (data.details ? `: ${data.details}` : "")
-            );
+          // Handle API-level errors
+          if (!data.success) {
+            throw new Error(data.message || data.error || "Analysis failed");
           }
 
-          // Get favicon URL
-          let faviconUrl = "";
-          if (data.website?.icon) {
-            faviconUrl = data.website.icon.startsWith("http")
-              ? data.website.icon
-              : `https://${domain}${data.website.icon}`;
-          }
+          displayResults(data);
+        } catch (error) {
+          showError(getErrorMessage(error));
+          console.error("Analysis Error:", error);
+        }
+      }
 
-          // Build the complete results HTML
-          let html = `
-                    <div class="result-header">
-                        <div class="domain-info">
-                            ${
-                              faviconUrl
-                                ? `<img src="${faviconUrl}" class="favicon" onerror="this.style.display='none'">`
-                                : ""
-                            }
-                            <div class="domain-text">
-                                <div class="domain-name">
-                                    ${domain}
-                                    ${
-                                      data.website?.title
-                                        ? `<span style="color: var(--gray); font-weight: normal;">| ${data.website.title}</span>`
-                                        : ""
-                                    }
-                                </div>
-                                <div class="domain-url">https://${domain}</div>
+      // Display Results
+      function displayResults(data) {
+        const domain = data.domain;
+        const faviconUrl = data.website?.icon
+          ? data.website.icon.startsWith("http")
+            ? data.website.icon
+            : `https://${domain}${data.website.icon}`
+          : null;
+
+        let html = `
+                <div class="result-header">
+                    <div class="domain-info">
+                        ${
+                          faviconUrl
+                            ? `<img src="${faviconUrl}" class="favicon" onerror="this.style.display='none'">`
+                            : ""
+                        }
+                        <div class="domain-text">
+                            <div class="domain-name">
+                                ${domain}
+                                ${
+                                  data.website?.title
+                                    ? `<span style="color: var(--gray); font-weight: normal;">| ${data.website.title}</span>`
+                                    : ""
+                                }
                             </div>
+                            <div class="domain-url">https://${domain}</div>
+                        </div>
+                    </div>
+                    ${
+                      data.cached
+                        ? '<div class="cached"><i class="fas fa-bolt"></i> Cached results</div>'
+                        : ""
+                    }
+                </div>
+                
+                <div class="verification-badge">
+                    <i class="fas fa-${
+                      data.whois?.registrant?.name
+                        ? "check-circle"
+                        : "shield-alt"
+                    }"></i>
+                    <div class="verification-text">
+                        <strong>${
+                          data.whois?.registrant?.name
+                            ? "Verified Registration"
+                            : "Private Registration Detected"
+                        }</strong>
+                        <p>${
+                          data.whois?.registrant?.name
+                            ? "This domain registration information is publicly available"
+                            : "For more accurate ownership details, try additional research methods"
+                        }</p>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-user-tie"></i> Registrant</h3>
+                        <div class="info-item">
+                            <div class="info-label">Name</div>
+                            <div class="info-value">${
+                              data.whois?.registrant?.name || "Not available"
+                            }</div>
                         </div>
                         ${
-                          data.cached
-                            ? '<div class="cached"><i class="fas fa-bolt"></i> Cached results</div>'
+                          data.whois?.registrant?.country
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Country</div>
+                            <div class="info-value">${data.whois.registrant.country}</div>
+                        </div>`
                             : ""
                         }
                     </div>
                     
-                    <div class="verification-badge">
-                        <i class="fas fa-${
-                          data.whois?.registrant?.name
-                            ? "check-circle"
-                            : "shield-alt"
-                        }"></i>
-                        <div class="verification-text">
-                            <strong>${
-                              data.whois?.registrant?.name
-                                ? "Verified Registration"
-                                : "Private Registration Detected"
-                            }</strong>
-                            <p>${
-                              data.whois?.registrant?.name
-                                ? "This domain registration information is publicly available"
-                                : "For more accurate ownership details, try additional research methods"
-                            }</p>
-                        </div>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-card">
-                            <h3><i class="fas fa-user-tie"></i> Registrant</h3>
-                            <div class="info-item">
-                                <div class="info-label">Name</div>
-                                <div class="info-value">${
-                                  data.whois?.registrant?.name ||
-                                  "Not available"
-                                }</div>
-                            </div>
-                            ${
-                              data.whois?.registrant?.country
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Country</div>
-                                <div class="info-value">${data.whois.registrant.country}</div>
-                            </div>`
-                                : ""
-                            }
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3><i class="fas fa-calendar-alt"></i> Registration</h3>
-                            ${
-                              data.whois?.dates?.created
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Created</div>
-                                <div class="info-value">${new Date(
-                                  data.whois.dates.created
-                                ).toLocaleDateString()}</div>
-                            </div>`
-                                : ""
-                            }
-                            ${
-                              data.whois?.dates?.expires
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Expires</div>
-                                <div class="info-value">${new Date(
-                                  data.whois.dates.expires
-                                ).toLocaleDateString()}</div>
-                            </div>`
-                                : ""
-                            }
-                            ${
-                              data.whois?.registrar
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Registrar</div>
-                                <div class="info-value">${data.whois.registrar}</div>
-                            </div>`
-                                : ""
-                            }
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3><i class="fas fa-globe"></i> Website</h3>
-                            ${
-                              data.website?.title
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Title</div>
-                                <div class="info-value">${data.website.title}</div>
-                            </div>`
-                                : ""
-                            }
-                            ${
-                              data.website?.description
-                                ? `
-                            <div class="info-item">
-                                <div class="info-label">Description</div>
-                                <div class="info-value">${data.website.description}</div>
-                            </div>`
-                                : ""
-                            }
-                        </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-calendar-alt"></i> Registration</h3>
+                        ${
+                          data.whois?.dates?.created
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Created</div>
+                            <div class="info-value">${new Date(
+                              data.whois.dates.created
+                            ).toLocaleDateString()}</div>
+                        </div>`
+                            : ""
+                        }
+                        ${
+                          data.whois?.dates?.expires
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Expires</div>
+                            <div class="info-value">${new Date(
+                              data.whois.dates.expires
+                            ).toLocaleDateString()}</div>
+                        </div>`
+                            : ""
+                        }
+                        ${
+                          data.whois?.registrar
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Registrar</div>
+                            <div class="info-value">${data.whois.registrar}</div>
+                        </div>`
+                            : ""
+                        }
                     </div>
                     
                     <div class="info-card">
-                        <h3><i class="fas fa-search-plus"></i> Continue Research</h3>
-                        <div class="research-links">
-                            <a href="https://www.google.com/search?q=${encodeURIComponent(
-                              data.whois?.registrant?.name || domain
-                            )}+company" class="research-link" target="_blank">
-                                <i class="fab fa-google"></i> Google
-                            </a>
-                            <a href="https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(
-                              data.whois?.registrant?.name || domain
-                            )}" class="research-link" target="_blank">
-                                <i class="fab fa-linkedin"></i> LinkedIn
-                            </a>
-                            <a href="https://www.whois.com/whois/${domain}" class="research-link" target="_blank">
-                                <i class="fas fa-database"></i> WHOIS
-                            </a>
-                            <a href="https://www.icann.org/whois" class="research-link" target="_blank">
-                                <i class="fas fa-globe"></i> ICANN
-                            </a>
-                        </div>
+                        <h3><i class="fas fa-globe"></i> Website</h3>
+                        ${
+                          data.website?.title
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Title</div>
+                            <div class="info-value">${data.website.title}</div>
+                        </div>`
+                            : ""
+                        }
+                        ${
+                          data.website?.description
+                            ? `
+                        <div class="info-item">
+                            <div class="info-label">Description</div>
+                            <div class="info-value">${data.website.description}</div>
+                        </div>`
+                            : ""
+                        }
                     </div>
-                    
-                    <div class="timestamp">
-                        <i class="far fa-clock"></i> Report generated: ${new Date(
-                          data.timestamp
-                        ).toLocaleString()}
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-search-plus"></i> Continue Research</h3>
+                    <div class="research-links">
+                        <a href="https://www.google.com/search?q=${encodeURIComponent(
+                          data.whois?.registrant?.name || domain
+                        )}+company" class="research-link" target="_blank">
+                            <i class="fab fa-google"></i> Google
+                        </a>
+                        <a href="https://www.linkedin.com/search/results/companies/?keywords=${encodeURIComponent(
+                          data.whois?.registrant?.name || domain
+                        )}" class="research-link" target="_blank">
+                            <i class="fab fa-linkedin"></i> LinkedIn
+                        </a>
+                        <a href="https://www.whois.com/whois/${domain}" class="research-link" target="_blank">
+                            <i class="fas fa-database"></i> WHOIS
+                        </a>
+                        <a href="https://www.icann.org/whois" class="research-link" target="_blank">
+                            <i class="fas fa-globe"></i> ICANN
+                        </a>
                     </div>
-                `;
+                </div>
+                
+                <div class="timestamp">
+                    <i class="far fa-clock"></i> Report generated: ${new Date(
+                      data.timestamp
+                    ).toLocaleString()}
+                </div>
+            `;
 
-          resultsDiv.innerHTML = html;
-        } catch (e) {
-          resultsDiv.innerHTML = `
-                    <div class="error-card">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <div class="error-content">
-                            <div class="error-title">Analysis Failed</div>
-                            <p>${e.message}</p>
-                            <p><small>Try again or check the URL format (e.g., example.com)</small></p>
-                        </div>
-                    </div>
-                `;
-          console.error("Error:", e);
-        }
+        resultsDiv.innerHTML = html;
+        resultsDiv.classList.add("show");
       }
 
-      // Allow searching by pressing Enter
-      document
-        .getElementById("urlInput")
-        .addEventListener("keypress", function (e) {
-          if (e.key === "Enter") {
-            analyzeURL();
-          }
-        });
+      // Error Handling
+      function showError(message) {
+        resultsDiv.innerHTML = `
+                <div class="error-card">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="error-content">
+                        <div class="error-title">Error</div>
+                        <p>${escapeHtml(message)}</p>
+                        <p><small>Try again or check the URL format (e.g., example.com)</small></p>
+                    </div>
+                </div>
+            `;
+        resultsDiv.classList.add("show");
+      }
+
+      function getErrorMessage(error) {
+        if (error instanceof Error) return error.message;
+        if (typeof error === "string") return error;
+        if (error?.message) return error.message;
+        return "An unknown error occurred";
+      }
+
+      // Loading State
+      function showLoading() {
+        resultsDiv.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Analyzing website...</div>
+                </div>
+            `;
+        resultsDiv.classList.add("show");
+      }
+
+      // XSS Protection
+      function escapeHtml(unsafe) {
+        return unsafe
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
     </script>
   </body>
 </html>

@@ -10,15 +10,7 @@ const cors = require("cors");
 const app = express();
 
 // Middleware
-app.use(
-  cors({
-    origin: [
-      "https://*.vercel.app",
-      "http://localhost:3000",
-      process.env.FRONTEND_URL,
-    ].filter(Boolean),
-  })
-);
+app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -30,7 +22,7 @@ const extractDomain = (url) => {
   try {
     const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
     return parsed.hostname.replace("www.", "");
-  } catch {
+  } catch (e) {
     return url.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
   }
 };
@@ -52,8 +44,7 @@ const getCompanyInfo = async (domain) => {
       registrar: data.registrar || "Unknown",
     };
   } catch (e) {
-    console.error("WHOIS Error:", e.message);
-    return null;
+    throw new Error(`WHOIS lookup failed: ${e.message}`);
   }
 };
 
@@ -73,20 +64,20 @@ const getWebsiteData = async (domain) => {
         $('link[rel="shortcut icon"]').attr("href"),
     };
   } catch (e) {
-    console.error("Website Fetch Error:", e.message);
-    return { error: "Could not fetch website", details: e.message };
+    throw new Error(`Website fetch failed: ${e.message}`);
   }
 };
 
-// Routes
+// API Route
 app.post("/api/analyze", async (req, res) => {
   try {
     const { url } = req.body;
 
-    if (!url) {
+    if (!url || typeof url !== "string") {
       return res.status(400).json({
-        error: "Validation Error",
-        message: "URL is required",
+        success: false,
+        error: "Invalid URL",
+        message: "Please provide a valid website URL",
       });
     }
 
@@ -94,8 +85,11 @@ app.post("/api/analyze", async (req, res) => {
 
     // Check cache
     if (cache.has(domain)) {
-      const cached = cache.get(domain);
-      return res.json({ ...cached, cached: true });
+      return res.json({
+        success: true,
+        ...cache.get(domain),
+        cached: true,
+      });
     }
 
     const [whoisData, websiteData] = await Promise.all([
@@ -104,6 +98,7 @@ app.post("/api/analyze", async (req, res) => {
     ]);
 
     const responseData = {
+      success: true,
       domain,
       whois: whoisData,
       website: websiteData,
@@ -114,13 +109,13 @@ app.post("/api/analyze", async (req, res) => {
     cache.set(domain, responseData);
     setTimeout(() => cache.delete(domain), 3600000);
 
-    res.json(responseData);
-  } catch (e) {
-    console.error("Analysis Error:", e);
-    res.status(500).json({
+    return res.json(responseData);
+  } catch (error) {
+    console.error("API Error:", error);
+    return res.status(500).json({
+      success: false,
       error: "Analysis Failed",
-      message: e.message,
-      ...(process.env.NODE_ENV === "development" && { stack: e.stack }),
+      message: error.message,
     });
   }
 });
@@ -130,16 +125,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Error Handling
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
-  res.status(500).json({
-    error: "Internal Server Error",
-    message: "An unexpected error occurred",
-  });
-});
-
-// Server Start
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
