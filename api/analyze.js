@@ -1,10 +1,18 @@
-// api/analyze.js
 const axios = require("axios");
 const cheerio = require("cheerio");
 const whois = require("whois-json");
 
-module.exports = async (req, res) => {
-  // Only allow POST requests
+export default async (req, res) => {
+  // Enable CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Handle OPTIONS for CORS preflight
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -16,12 +24,9 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: "URL is required" });
     }
 
-    // Extract domain
     const domain = url.replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0];
-
-    // Your analysis logic
     const [whoisData, websiteData] = await Promise.all([
-      getCompanyInfo(domain),
+      whois(domain),
       getWebsiteData(domain),
     ]);
 
@@ -31,10 +36,15 @@ module.exports = async (req, res) => {
   }
 };
 
-// Helper functions (same as before)
-async function getCompanyInfo(domain) {
-  /* ... */
-}
 async function getWebsiteData(domain) {
-  /* ... */
+  try {
+    const response = await axios.get(`https://${domain}`);
+    const $ = cheerio.load(response.data);
+    return {
+      title: $("title").text(),
+      description: $('meta[name="description"]').attr("content"),
+    };
+  } catch (error) {
+    return { error: "Failed to fetch website data" };
+  }
 }

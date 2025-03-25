@@ -5,20 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Website Analyzer</title>
     <style>
-      /* Basic styles */
       body {
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-      }
-
-      .container {
         max-width: 800px;
         margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
       }
 
       .search-box {
         display: flex;
+        gap: 10px;
         margin-bottom: 20px;
       }
 
@@ -26,6 +28,8 @@
         flex: 1;
         padding: 10px;
         font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
       }
 
       #analyzeButton {
@@ -33,21 +37,29 @@
         background-color: #007bff;
         color: white;
         border: none;
+        border-radius: 4px;
         cursor: pointer;
+        font-size: 16px;
       }
 
-      /* Error styles */
-      .error-card {
-        display: flex;
-        background-color: #f8d7da;
-        color: #721c24;
-        padding: 15px;
+      #analyzeButton:hover {
+        background-color: #0056b3;
+      }
+
+      #results {
+        margin-top: 30px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+      }
+
+      .result-card {
+        background: #f9f9f9;
+        padding: 20px;
         border-radius: 5px;
-        margin-top: 20px;
+        margin-bottom: 20px;
       }
 
-      /* Loading styles */
-      .loading-container {
+      .loading {
         text-align: center;
         padding: 20px;
       }
@@ -59,7 +71,7 @@
         width: 50px;
         height: 50px;
         animation: spin 1s linear infinite;
-        margin: 0 auto 15px;
+        margin: 0 auto 20px;
       }
 
       @keyframes spin {
@@ -71,9 +83,12 @@
         }
       }
 
-      /* Hidden class */
-      .hidden {
-        display: none;
+      .error {
+        color: #dc3545;
+        background: #f8d7da;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
       }
     </style>
   </head>
@@ -91,30 +106,7 @@
       </div>
 
       <div id="results">
-        <!-- We'll populate this dynamically -->
-      </div>
-
-      <!-- Error template -->
-      <div id="errorTemplate" class="hidden">
-        <div class="error-card">
-          <div class="error-content">
-            <div class="error-title">Error</div>
-            <p class="error-message"></p>
-            <p>
-              <small
-                >Try again or check the URL format (e.g., example.com)</small
-              >
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading template -->
-      <div id="loadingTemplate" class="hidden">
-        <div class="loading-container">
-          <div class="spinner"></div>
-          <div class="loading-text">Analyzing website...</div>
-        </div>
+        <!-- Results will appear here -->
       </div>
     </div>
 
@@ -123,16 +115,12 @@
         const urlInput = document.getElementById("urlInput");
         const analyzeButton = document.getElementById("analyzeButton");
         const resultsDiv = document.getElementById("results");
-        const errorTemplate = document.getElementById("errorTemplate");
-        const loadingTemplate = document.getElementById("loadingTemplate");
 
-        // Main analysis function
         const analyzeURL = async () => {
           const url = urlInput.value.trim();
 
           // Clear previous results
           resultsDiv.innerHTML = "";
-          resultsDiv.classList.remove("show");
 
           // Validate input
           if (!url) {
@@ -148,78 +136,55 @@
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Accept: "application/json",
               },
               body: JSON.stringify({ url }),
             });
 
-            // Handle HTTP errors
             if (!response.ok) {
-              const errorData = await parseResponse(response);
+              const errorData = await response.json();
               throw new Error(
-                errorData?.message || `Server returned ${response.status}`
+                errorData?.error || `Server returned ${response.status}`
               );
             }
 
-            const data = await parseResponse(response);
-
-            // Handle API errors
-            if (data?.error) {
-              throw new Error(data.message || data.error);
-            }
-
-            // Show successful results
+            const data = await response.json();
             displayResults(data);
           } catch (error) {
-            showError(getSafeErrorMessage(error));
+            showError(error.message);
             console.error("Analysis error:", error);
           }
         };
 
-        // Helper to safely parse JSON responses
-        const parseResponse = async (response) => {
-          try {
-            return await response.json();
-          } catch {
-            return { error: "Invalid server response" };
-          }
-        };
-
-        // Safe error message extraction
-        const getSafeErrorMessage = (error) => {
-          if (typeof error === "string") return error;
-          if (error?.message) return error.message;
-          if (error?.toString) return error.toString();
-          return "An unknown error occurred";
-        };
-
-        // Display loading state
         const showLoading = () => {
-          resultsDiv.innerHTML = loadingTemplate.innerHTML;
-          resultsDiv.classList.add("show");
-        };
-
-        // Display error state
-        const showError = (message) => {
-          const clone = errorTemplate.cloneNode(true);
-          clone.classList.remove("hidden");
-          clone.querySelector(".error-message").textContent =
-            getSafeErrorMessage(message);
-          resultsDiv.innerHTML = "";
-          resultsDiv.appendChild(clone);
-          resultsDiv.classList.add("show");
-        };
-
-        // Display successful results
-        const displayResults = (data) => {
-          // Simple results display - you should customize this
           resultsDiv.innerHTML = `
-            <div class="results-card">
-              <h2>Analysis Results</h2>
-              <pre>${JSON.stringify(data, null, 2)}</pre>
-            </div>
-          `;
-          resultsDiv.classList.add("show");
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing website...</p>
+                    </div>
+                `;
+        };
+
+        const showError = (message) => {
+          resultsDiv.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${message}
+                        <p><small>Try again or check the URL format (e.g., example.com)</small></p>
+                    </div>
+                `;
+        };
+
+        const displayResults = (data) => {
+          resultsDiv.innerHTML = `
+                    <div class="result-card">
+                        <h2>Analysis Results for ${data.domain}</h2>
+                        
+                        <h3>WHOIS Information</h3>
+                        <pre>${JSON.stringify(data.whoisData, null, 2)}</pre>
+                        
+                        <h3>Website Data</h3>
+                        <pre>${JSON.stringify(data.websiteData, null, 2)}</pre>
+                    </div>
+                `;
         };
 
         // Event listeners
