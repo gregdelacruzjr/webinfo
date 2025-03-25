@@ -1,14 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- [Keep all your existing head content] -->
-    <!-- [Keep all your existing head content] -->
-    <!-- [Keep all your existing head content] -->
-    <!-- [Keep all your existing head content] -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website Analyzer</title>
     <style>
-      /* [Keep all your existing styles] */
+      /* Basic styles */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
 
-      /* Add this new style */
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .search-box {
+        display: flex;
+        margin-bottom: 20px;
+      }
+
+      #urlInput {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+      }
+
+      #analyzeButton {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      /* Error styles */
+      .error-card {
+        display: flex;
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+
+      /* Loading styles */
+      .loading-container {
+        text-align: center;
+        padding: 20px;
+      }
+
+      .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Hidden class */
       .hidden {
         display: none;
       }
@@ -16,16 +79,24 @@
   </head>
   <body>
     <div class="container">
-      <!-- [Keep your existing header and search box] -->
+      <h1>Website Analyzer</h1>
+
+      <div class="search-box">
+        <input
+          type="text"
+          id="urlInput"
+          placeholder="Enter website URL (e.g., example.com)"
+        />
+        <button id="analyzeButton">Analyze</button>
+      </div>
 
       <div id="results">
         <!-- We'll populate this dynamically -->
       </div>
 
-      <!-- Add this hidden error template -->
+      <!-- Error template -->
       <div id="errorTemplate" class="hidden">
         <div class="error-card">
-          <i class="fas fa-exclamation-circle"></i>
           <div class="error-content">
             <div class="error-title">Error</div>
             <p class="error-message"></p>
@@ -38,7 +109,7 @@
         </div>
       </div>
 
-      <!-- Add this hidden loading template -->
+      <!-- Loading template -->
       <div id="loadingTemplate" class="hidden">
         <div class="loading-container">
           <div class="spinner"></div>
@@ -141,8 +212,14 @@
 
         // Display successful results
         const displayResults = (data) => {
-          // [Keep your existing displayResults implementation]
-          // ... but make sure to escape all dynamic content
+          // Simple results display - you should customize this
+          resultsDiv.innerHTML = `
+            <div class="results-card">
+              <h2>Analysis Results</h2>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            </div>
+          `;
+          resultsDiv.classList.add("show");
         };
 
         // Event listeners
