@@ -1,14 +1,8 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/analyze.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
+    { "src": "api/analyze.js", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
     {
@@ -16,9 +10,6 @@
       "dest": "/api/analyze",
       "methods": ["POST", "OPTIONS"]
     },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
